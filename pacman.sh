@@ -141,6 +141,20 @@ show_progress() {
   set_term_title "${TITLE_PREFIX}  ${text}"
 }
 
+echo -ne "${cyan}"
+echo '    888     888               888          888                 .d8888b.                   d8b          888   '
+echo '    888     888               888          888                d88P  Y88b                  Y8P          888   '
+echo '    888     888               888          888                Y88b.                                    888   '
+echo '    888     888 88888b.   .d88888  8888b.  888888 .d88b.       "Y888b.    .d8888b 888d888 888 88888b.  888888'
+echo '    888     888 888 "88b d88" 888     "88b 888   d8P  Y8b         "Y88b. d88P"    888P"   888 888 "88b 888   '
+echo '    888     888 888  888 888  888 .d888888 888   88888888           "888 888      888     888 888  888 888   '
+echo '    Y88b. .d88P 888 d88P Y88b 888 888  888 Y88b. Y8b.         Y88b  d88P Y88b.    888     888 888 d88P Y88b. '
+echo '    "Y88888P"  88888P"   "Y88888 "Y888888  "Y888 "Y8888       "Y8888P"   "Y8888P 888     888 88888P"   "Y888"'
+echo '                888                                                                           888            '
+echo '                888                                                                           888            '
+echo '                888                                                                                          '
+echo -ne "${reset}"
+
 # Keep sudo alive during the script
 echo -e "\n\n"
 echo -ne "${yellow}"
@@ -178,21 +192,6 @@ clear
 
 progress_ui_init
 show_progress "$current_step" "$total_steps"
-
-echo -ne "${cyan}"
-echo '    888     888               888          888                 .d8888b.                   d8b          888   '
-echo '    888     888               888          888                d88P  Y88b                  Y8P          888   '
-echo '    888     888               888          888                Y88b.                                    888   '
-echo '    888     888 88888b.   .d88888  8888b.  888888 .d88b.       "Y888b.    .d8888b 888d888 888 88888b.  888888'
-echo '    888     888 888 "88b d88" 888     "88b 888   d8P  Y8b         "Y88b. d88P"    888P"   888 888 "88b 888   '
-echo '    888     888 888  888 888  888 .d888888 888   88888888           "888 888      888     888 888  888 888   '
-echo '    Y88b. .d88P 888 d88P Y88b 888 888  888 Y88b. Y8b.         Y88b  d88P Y88b.    888     888 888 d88P Y88b. '
-echo '    "Y88888P"  88888P"   "Y88888 "Y888888  "Y888 "Y8888       "Y8888P"   "Y8888P 888     888 88888P"   "Y888"'
-echo '                888                                                                           888            '
-echo '                888                                                                           888            '
-echo '                888                                                                                          '
-echo -ne "${reset}"
-sleep 3
 
 # Create /tmp/manjaro if it doesn't exist
 rm -rf /tmp/manjaro
@@ -2081,4 +2080,3 @@ cp -f "$cleaned_tmp" "$HOME/$final_filename"
 printf "%b" "${yellow}Press Enter for Errors report${reset}"
 read -r
 rm -rf /tmp/manjaro
-

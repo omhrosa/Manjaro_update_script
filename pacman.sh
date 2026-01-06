@@ -79,7 +79,9 @@ print_errors_summary() {
   fi
 
   echo -e "${red}Total errors:${reset} ${orange}${ERROR_COUNT}${reset}"
+  echo
   echo -e "${yellow}Errors list:${reset}"
+  echo
 
   local i=1
   local e
@@ -2080,3 +2082,4 @@ cp -f "$cleaned_tmp" "$HOME/$final_filename"
 printf "%b" "${yellow}Press Enter for Errors report${reset}"
 read -r
 rm -rf /tmp/manjaro
+

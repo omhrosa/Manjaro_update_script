@@ -180,6 +180,35 @@ on_exit() {
  printf "%b" "${yellow}Press Enter to close...${reset}"
  read -r </dev/tty
 
+# Stop logging - Final log
+exec 1>&3 2>&4
+
+# Reuse datetime_str from earlier logging step
+# final_filename must match log file name (used in $log_path)
+final_filename="Update-${datetime_str}.log"
+
+# Temp file in tmpfs
+cleaned_tmp="/tmp/manjaro/cleaned_tmp.log"
+
+# Clean the log: remove ANSI codes and non-printables
+sed -E 's/\x1B\[[0-9;?]*[A-Za-z]//g; s/\x1B\][^\x07\x1B]*(\x07|\x1B\\)//g' "$log_path" | \
+tr -cd '\11\12\15\40-\176' | \
+awk '
+BEGIN { skip = 0 }
+/^ *8.888888888e+09/ { skip = 1 }
+skip && /88P" */ { skip = 0; next }
+skip == 0 { print }
+' > "$cleaned_tmp"
+
+# Delete existing logs before saving new one
+find $HOME -maxdepth 1 -type f -name 'Update-*.log' -exec rm -f {} \;
+
+# Copy cleaned log to final destination with Greek timestamped name
+cp -f "$cleaned_tmp" "$HOME/$final_filename"
+
+# Clean /tmp
+rm -rf /tmp/manjaro
+
   return "$rc"
 }
 
@@ -2045,32 +2074,3 @@ list_aur_with_repo_check() {
 }
 list_aur_with_repo_check
 list_flatpaks_with_repo_check
-
-# Stop logging - Final log
-exec 1>&3 2>&4
-
-# Reuse datetime_str from earlier logging step
-# final_filename must match log file name (used in $log_path)
-final_filename="Update-${datetime_str}.log"
-
-# Temp file in tmpfs
-cleaned_tmp="/tmp/manjaro/cleaned_tmp.log"
-
-# Clean the log: remove ANSI codes and non-printables
-sed -E 's/\x1B\[[0-9;?]*[A-Za-z]//g; s/\x1B\][^\x07\x1B]*(\x07|\x1B\\)//g' "$log_path" | \
-tr -cd '\11\12\15\40-\176' | \
-awk '
-BEGIN { skip = 0 }
-/^ *8.888888888e+09/ { skip = 1 }
-skip && /88P" */ { skip = 0; next }
-skip == 0 { print }
-' > "$cleaned_tmp"
-
-# Delete existing logs before saving new one
-find $HOME -maxdepth 1 -type f -name 'Update-*.log' -exec rm -f {} \;
-
-# Copy cleaned log to final destination with Greek timestamped name
-cp -f "$cleaned_tmp" "$HOME/$final_filename"
-
-# Clean /tmp
-rm -rf /tmp/manjaro

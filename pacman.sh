@@ -80,7 +80,7 @@ print_errors_summary() {
 
   echo -e "${red}Total errors:${reset} ${orange}${ERROR_COUNT}${reset}"
   echo
-  echo -e "${yellow}Errors list:${reset}"
+  echo -e "Errors list:"
   echo
 
   local i=1
@@ -167,11 +167,8 @@ SUDOREFRESHPID=$!
 on_exit() {
   local rc=$?
 
-  echo -e "\n\n\n"
-  echo -e "${purple}$(printf '%*s' 50 '' | tr ' ' '-') Errors report $(printf '%*s' 50 '' | tr ' ' '-')${reset}"
-  echo -e "\n\n\n"
   print_errors_summary
-  echo
+  echo 
 
   # Cleanly end the progress UI
   progress_ui_end
@@ -180,7 +177,6 @@ on_exit() {
   [[ -n "${SUDOREFRESHPID:-}" ]] && kill "$SUDOREFRESHPID" 2>/dev/null || true
 
   # Keep the terminal open so you can actually see the report
- echo -e "\n\n"
  printf "%b" "${yellow}Press Enter to close...${reset}"
  read -r </dev/tty
 
@@ -2047,10 +2043,8 @@ list_aur_with_repo_check() {
     done
     echo
 }
-
 list_aur_with_repo_check
 list_flatpaks_with_repo_check
-echo
 
 # Stop logging - Final log
 exec 1>&3 2>&4
@@ -2078,8 +2072,5 @@ find $HOME -maxdepth 1 -type f -name 'Update-*.log' -exec rm -f {} \;
 # Copy cleaned log to final destination with Greek timestamped name
 cp -f "$cleaned_tmp" "$HOME/$final_filename"
 
-# Prevent console from closing
-printf "%b" "${yellow}Press Enter for Errors report${reset}"
-read -r
+# Clean /tmp
 rm -rf /tmp/manjaro
-

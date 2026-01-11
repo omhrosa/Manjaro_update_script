@@ -2080,6 +2080,7 @@ list_aur_with_repo_check() {
 }
 list_aur_with_repo_check
 list_flatpaks_with_repo_check
+
 # Print a message only if Manjaro repos offer a newer LTS kernel *series* than you have installed.
 # Otherwise print nothing.
 check_newer_manjaro_lts_kernel() {
@@ -2151,10 +2152,11 @@ print("\n".join(sorted(out, key=lambda s: tuple(map(int,s.split("."))))))
   if [[ -z "$latest_inst_mm" ]] || \
      [[ "$(printf '%s\n%s\n' "$latest_inst_mm" "$latest_avail_mm" | sort -V | tail -n1)" != "$latest_inst_mm" ]]; then
     echo -e "${red}Newer LTS kernel series available: ${orange}${latest_avail_k}${reset} (installed LTS: ${latest_inst_k:-none})"
+    echo
   fi
 }
 
 # Usage:
 # check_newer_manjaro_lts_kernel
 check_newer_manjaro_lts_kernel
-echo
+

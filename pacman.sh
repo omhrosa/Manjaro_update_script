@@ -1536,8 +1536,8 @@ else
 fi
 echo -e "\n\n\n"
 
-# Cleanup thumbnails, screenshots, and downloads
-echo -e "${cyan}Checking thumbnails, screenshots, and downloads...${reset}"
+# Cleanup thumbnails, screenshots, downloads, and trash
+echo -e "${cyan}Checking thumbnails, screenshots, downloads, and trash...${reset}"
 echo
 
 TARGETS=(
@@ -1545,6 +1545,12 @@ TARGETS=(
   "$HOME/Screenshots"
   "$HOME/Downloads"
 )
+
+# Add all trash subfolders
+TRASH_SUBFOLDERS=(files info expunged)
+for SUB in "${TRASH_SUBFOLDERS[@]}"; do
+    TARGETS+=("$HOME/.local/share/Trash/$SUB")
+done
 
 for DIR in "${TARGETS[@]}"; do
     if [ -d "$DIR" ]; then

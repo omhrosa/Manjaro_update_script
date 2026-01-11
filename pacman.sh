@@ -177,7 +177,7 @@ on_exit() {
   [[ -n "${SUDOREFRESHPID:-}" ]] && kill "$SUDOREFRESHPID" 2>/dev/null || true
 
   # Keep the terminal open so you can actually see the report
- printf "%b" "${yellow}Press Enter to close...${reset}"
+ #printf "%b" "${yellow}Press Enter to close...${reset}"
  read -r </dev/tty
 
 # Stop logging - Final log
@@ -2080,3 +2080,81 @@ list_aur_with_repo_check() {
 }
 list_aur_with_repo_check
 list_flatpaks_with_repo_check
+# Print a message only if Manjaro repos offer a newer LTS kernel *series* than you have installed.
+# Otherwise print nothing.
+check_newer_manjaro_lts_kernel() {
+  # Map Manjaro kernel series name -> "major.minor"
+  # linux66  -> 6.6
+  # linux515 -> 5.15
+  _k_mm() {
+    local k="${1#linux}" major minor
+    if ((${#k} == 2)); then
+      major="${k:0:1}"
+      minor="${k:1:1}"
+    else
+      major="${k:0:${#k}-2}"
+      minor="${k: -2}"
+    fi
+    printf '%d.%d\n' "$((10#$major))" "$((10#$minor))"
+  }
+
+  # Get upstream longterm (LTS) major.minor list (e.g. 6.12, 6.6, 6.1, 5.15, ...)
+  local lts_mm
+  if ! lts_mm="$(
+    curl -fsSL 'https://www.kernel.org/releases.json' |
+    python3 -c 'import json,sys
+d=json.load(sys.stdin)
+out=set()
+for r in d.get("releases",[]):
+    if r.get("moniker")=="longterm" and not r.get("iseol",False):
+        v=r.get("version","")
+        out.add(".".join(v.split(".")[:2]))
+print("\n".join(sorted(out, key=lambda s: tuple(map(int,s.split("."))))))
+'
+  )"; then
+    return 0  # stay silent on network/parse errors
+  fi
+
+  # Available + installed Manjaro kernel series (linuxXY, linuxXYZ), ignoring -rt
+  mapfile -t avail < <(mhwd-kernel -l  | grep -oE 'linux[0-9]+' | sort -u)
+  mapfile -t inst  < <(mhwd-kernel -li | grep -oE 'linux[0-9]+' | sort -u)
+
+  # Newest available LTS series in Manjaro repos
+  local latest_avail_line latest_avail_mm latest_avail_k
+  latest_avail_line="$(
+    for k in "${avail[@]}"; do
+      mm="$(_k_mm "$k")"
+      grep -qxF "$mm" <<<"$lts_mm" || continue
+      printf '%s %s\n' "$mm" "$k"
+    done | sort -V | tail -n1
+  )"
+  [[ -n "$latest_avail_line" ]] || return 0
+  read -r latest_avail_mm latest_avail_k <<<"$latest_avail_line"
+
+  # Newest installed LTS series
+  local latest_inst_line latest_inst_mm latest_inst_k
+  latest_inst_line="$(
+    for k in "${inst[@]}"; do
+      mm="$(_k_mm "$k")"
+      grep -qxF "$mm" <<<"$lts_mm" || continue
+      printf '%s %s\n' "$mm" "$k"
+    done | sort -V | tail -n1
+  )"
+  if [[ -n "$latest_inst_line" ]]; then
+    read -r latest_inst_mm latest_inst_k <<<"$latest_inst_line"
+  else
+    latest_inst_mm=""
+    latest_inst_k=""
+  fi
+
+  # Prompt only if available LTS series is newer than installed LTS series
+  if [[ -z "$latest_inst_mm" ]] || \
+     [[ "$(printf '%s\n%s\n' "$latest_inst_mm" "$latest_avail_mm" | sort -V | tail -n1)" != "$latest_inst_mm" ]]; then
+    echo -e "${red}Newer LTS kernel series available: ${orange}${latest_avail_k}${reset} (installed LTS: ${latest_inst_k:-none})"
+  fi
+}
+
+# Usage:
+# check_newer_manjaro_lts_kernel
+check_newer_manjaro_lts_kernel
+echo
